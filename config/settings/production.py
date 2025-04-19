@@ -20,6 +20,11 @@ DATABASES = {
 # Static files (CSS, JavaScript, Images)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_MIMETYPES = {
+    '.js': 'application/javascript',
+    '.mjs': 'application/javascript',
+    '.css': 'text/css',
+}
 
 # Security settings
 SECURE_SSL_REDIRECT = True
@@ -124,9 +129,10 @@ LOGGING = {
     },
 }
 
-# Add RequestLoggingMiddleware to middleware
+# Add WhiteNoise middleware at the top, right after security middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
