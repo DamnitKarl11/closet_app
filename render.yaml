@@ -20,11 +20,11 @@ services:
     healthCheckPath: /api/health/
     autoDeploy: true
 
-  - type: web
+  - type: static
     name: closet-app-frontend
     env: node
     buildCommand: cd frontend && npm install && npm run build
-    startCommand: cd frontend && serve -s build
+    publishDir: static/frontend
     envVars:
       - key: REACT_APP_API_URL
         value: https://closet-app-backend.onrender.com
