@@ -126,11 +126,7 @@ const TodayView: React.FC = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch(`${API_BASE_URL}/clothing-items/`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await getClothingItems();
       setItems(data);
     } catch (err) {
       setError('Failed to load clothing items. Please try again later.');
@@ -143,19 +139,15 @@ const TodayView: React.FC = () => {
   const handleSave = async () => {
     try {
       setError(null);
-      const response = await fetch(`${API_BASE_URL}/wear-logs/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          items: Object.values(selectedItems),
-          date: new Date().toISOString().split('T')[0],
-        }),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const wearLogData: Omit<WearLog, 'id' | 'created_at'> = {
+        items: [],
+        item_ids: Object.values(selectedItems),
+        date_worn: new Date().toISOString(),
+        weather_log: null,
+        notes: ''
+      };
+      
+      await createWearLog(wearLogData);
       setSelectedItems({});
     } catch (err) {
       setError('Failed to save today\'s outfit. Please try again later.');
