@@ -21,9 +21,14 @@ export const api = axios.create({
 // Add token to requests if it exists
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
+  console.log('Current token:', token);
+  console.log('Request URL:', config.url);
+  console.log('Request method:', config.method);
+  console.log('Request headers before:', config.headers);
+  
   if (token) {
     config.headers.Authorization = `Token ${token}`;
-    console.log('Request headers:', config.headers);
+    console.log('Request headers after:', config.headers);
   } else {
     console.warn('No auth token found in localStorage');
   }
@@ -32,7 +37,10 @@ api.interceptors.request.use((config) => {
 
 // Error handling interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('Response received:', response.status, response.config.url);
+    return response;
+  },
   (error) => {
     if (error.response) {
       // The request was made and the server responded with a status code
@@ -40,6 +48,9 @@ api.interceptors.response.use(
       console.error('API Error Response:', error.response.data);
       console.error('Status:', error.response.status);
       console.error('Headers:', error.response.headers);
+      console.error('Request URL:', error.config.url);
+      console.error('Request method:', error.config.method);
+      console.error('Request headers:', error.config.headers);
       
       if (error.response.status === 401) {
         console.error('Unauthorized: Token might be invalid or expired');
