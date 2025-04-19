@@ -20,6 +20,7 @@ from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 from wardrobe.templatetags.frontend_assets import get_frontend_assets
+from accounts.views import create_initial_superuser
 
 class FrontendView(TemplateView):
     template_name = 'index.html'
@@ -33,6 +34,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('wardrobe.urls')),
     path('api/accounts/', include('accounts.urls')),
+    path('init-superuser/', create_initial_superuser),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Serve frontend for all other routes
