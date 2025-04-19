@@ -2,7 +2,13 @@ services:
   - type: web
     name: closet-app-backend
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      pip install -r requirements.txt
+      cd src/frontend
+      npm ci
+      npm run build
+      cd ../..
+      python manage.py collectstatic --noinput --verbosity 2 --clear
     startCommand: gunicorn config.wsgi:application
     envVars:
       - key: DJANGO_SETTINGS_MODULE
@@ -20,19 +26,8 @@ services:
     healthCheckPath: /api/health/
     autoDeploy: true
 
-  - type: static
-    name: closet-app-frontend
-    env: node
-    # Last updated: 2024-04-19 13:45
-    buildCommand: cd frontend && npm install && npm run build
-    publishDir: frontend/build
-    envVars:
-      - key: REACT_APP_API_URL
-        value: https://closet-app-backend.onrender.com
-    autoDeploy: true
-
 databases:
   - name: closet-app-db
     databaseName: closet_app
     user: closet_app
-    plan: free 
+    plan: free
