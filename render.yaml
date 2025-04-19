@@ -24,7 +24,7 @@ services:
     name: closet-app-frontend
     env: node
     buildCommand: npm install && npm run build
-    rootDir: frontend
+    rootDir: src/frontend
     publishDir: build
     envVars:
       - key: REACT_APP_API_URL
