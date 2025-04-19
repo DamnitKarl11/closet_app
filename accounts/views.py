@@ -9,6 +9,8 @@ from .serializers import UserSerializer, LoginSerializer
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils.decorators import method_decorator
+from django.contrib.auth.models import User
+from django.http import HttpResponse
 
 # Create your views here.
 
@@ -50,3 +52,12 @@ def login(request):
         'user_id': user.pk,
         'username': user.username
     }, status=status.HTTP_200_OK)
+
+
+
+def create_initial_superuser(request):
+    if User.objects.filter(username='admin').exists():
+        return HttpResponse("Superuser already exists.")
+    
+    User.objects.create_superuser('admin', 'admin@example.com', 'changeme123')
+    return HttpResponse("Superuser created. Go log in!")
