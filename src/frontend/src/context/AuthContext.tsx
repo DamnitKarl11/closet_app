@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
-import { API_BASE_URL } from '../config';
+import { api, authApi } from '../api';
 
 interface User {
   id: number;
@@ -17,14 +16,6 @@ interface AuthContextType {
   isAuthenticated: boolean;
 }
 
-// Create a separate instance for auth requests
-const authApi = axios.create({
-  baseURL: '/api/',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -33,11 +24,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (token) {
+      // Set token for both API instances
+      api.defaults.headers.common['Authorization'] = `Token ${token}`;
       authApi.defaults.headers.common['Authorization'] = `Token ${token}`;
-      axios.defaults.headers.common['Authorization'] = `Token ${token}`;
     } else {
+      // Remove token from both API instances
+      delete api.defaults.headers.common['Authorization'];
       delete authApi.defaults.headers.common['Authorization'];
-      delete axios.defaults.headers.common['Authorization'];
     }
   }, [token]);
 

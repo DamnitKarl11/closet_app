@@ -3,14 +3,14 @@ import { ClothingItem, WearLog, WeatherSuggestion, Weather } from './types';
 import { API_BASE_URL, AUTH_BASE_URL } from './config';
 
 // Create a separate instance for auth requests (no credentials needed)
-const authApi = axios.create({
+export const authApi = axios.create({
   baseURL: AUTH_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -23,6 +23,9 @@ api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Token ${token}`;
+    console.log('Request headers:', config.headers);
+  } else {
+    console.warn('No auth token found in localStorage');
   }
   return config;
 });
@@ -36,12 +39,22 @@ api.interceptors.response.use(
       // that falls out of the range of 2xx
       console.error('API Error Response:', error.response.data);
       console.error('Status:', error.response.status);
+      console.error('Headers:', error.response.headers);
+      
+      if (error.response.status === 401) {
+        console.error('Unauthorized: Token might be invalid or expired');
+        // Clear token and redirect to login
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     } else if (error.request) {
       // The request was made but no response was received
       console.error('No response received:', error.request);
+      console.error('Request config:', error.config);
     } else {
       // Something happened in setting up the request that triggered an Error
       console.error('Error setting up request:', error.message);
+      console.error('Error config:', error.config);
     }
     return Promise.reject(error);
   }
@@ -49,7 +62,9 @@ api.interceptors.response.use(
 
 export const getClothingItems = async (): Promise<ClothingItem[]> => {
   try {
+    console.log('Fetching clothing items from:', `${API_BASE_URL}/clothing-items/`);
     const response = await api.get('/clothing-items/');
+    console.log('Clothing items response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching clothing items:', error);
