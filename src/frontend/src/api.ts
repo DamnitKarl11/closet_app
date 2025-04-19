@@ -174,7 +174,7 @@ export const getCurrentWeather = async (): Promise<Weather> => {
 export const login = async (username: string, password: string) => {
   try {
     // Use authApi for login request
-    const response = await authApi.post('accounts/login/', { username, password });
+    const response = await authApi.post('/api/accounts/login/', { username, password });
     if (response.data.token) {
       localStorage.setItem('authToken', response.data.token);
     }
