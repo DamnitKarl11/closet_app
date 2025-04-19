@@ -42,6 +42,12 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_DOMAIN = None  # Allow cross-domain cookies
 
+# For development only - exempt auth endpoints from CSRF
+CSRF_EXEMPT_URLS = [
+    r'^/api/accounts/login/',
+    r'^/api/accounts/register/',
+]
+
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # For development and testing
 CORS_ALLOWED_ORIGINS = [
