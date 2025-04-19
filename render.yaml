@@ -24,7 +24,8 @@ services:
     name: closet-app-frontend
     env: node
     buildCommand: npm install && npm run build
-    publishDir: frontend/build
+    rootDir: frontend
+    publishDir: build
     envVars:
       - key: REACT_APP_API_URL
         value: https://closet-app-backend.onrender.com
