@@ -23,6 +23,7 @@ services:
   - type: static
     name: closet-app-frontend
     env: node
+    # Last updated: 2024-04-19 13:45
     buildCommand: cd src/frontend && npm install && npm run build
     publishDir: src/frontend/build
     envVars:
