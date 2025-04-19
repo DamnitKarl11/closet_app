@@ -21,7 +21,7 @@ export const api = axios.create({
 
 // Add token to requests if it exists
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('authToken');
   console.log('Current token:', token);
   console.log('Request URL:', config.url);
   console.log('Request method:', config.method);
@@ -39,7 +39,7 @@ api.interceptors.request.use((config) => {
 
 // Add same token handling to authApi
 authApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('authToken');
   if (token && !config.url?.includes('login') && !config.url?.includes('register')) {
     config.headers.Authorization = `Token ${token}`;
   }
@@ -63,7 +63,7 @@ api.interceptors.response.use(
       
       if (error.response.status === 401) {
         console.error('Unauthorized: Token might be invalid or expired');
-        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
         window.location.href = '/login';
       }
     } else if (error.request) {
@@ -176,7 +176,7 @@ export const login = async (username: string, password: string) => {
     // Use authApi for login request
     const response = await authApi.post('accounts/login/', { username, password });
     if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('authToken', response.data.token);
     }
     return response.data;
   } catch (error) {
