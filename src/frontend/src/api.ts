@@ -22,17 +22,22 @@ export const api = axios.create({
 // Add token to requests if it exists
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('authToken');
-  console.log('Current token:', token);
-  console.log('Request URL:', config.url);
-  console.log('Request method:', config.method);
-  console.log('Request headers before:', config.headers);
+  console.log('API Request:', {
+    url: config.url,
+    method: config.method,
+    token: token,
+    headers: config.headers
+  });
   
   if (token) {
     config.headers.Authorization = `Token ${token}`;
-    console.log('Request headers after:', config.headers);
+    console.log('Added token to request headers:', config.headers);
   } else {
     console.warn('No auth token found in localStorage');
-    window.location.href = '/login';
+    if (!config.url?.includes('login') && !config.url?.includes('register')) {
+      console.log('Non-auth request without token, redirecting to login');
+      window.location.href = '/login';
+    }
   }
   return config;
 });
@@ -40,8 +45,16 @@ api.interceptors.request.use((config) => {
 // Add same token handling to authApi
 authApi.interceptors.request.use((config) => {
   const token = localStorage.getItem('authToken');
+  console.log('Auth API Request:', {
+    url: config.url,
+    method: config.method,
+    token: token,
+    headers: config.headers
+  });
+  
   if (token && !config.url?.includes('login') && !config.url?.includes('register')) {
     config.headers.Authorization = `Token ${token}`;
+    console.log('Added token to auth request headers:', config.headers);
   }
   return config;
 });
