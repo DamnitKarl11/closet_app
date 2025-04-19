@@ -37,7 +37,7 @@ export interface WearLog {
   item_ids?: number[];
   date_worn: string;
   weather_log: WeatherLog | null;
-  notes?: string;
+  notes: string;
   created_at: string;
 }
 
@@ -60,7 +60,6 @@ export interface Weather {
   temp_low: number;
   precipitation_chance: number;
   humidity: number;
-  last_updated: string;
   conditions: {
     primary: string;
     all: string[];
@@ -71,4 +70,5 @@ export interface Weather {
       humidity: string;
     };
   };
+  last_updated: string;
 } 

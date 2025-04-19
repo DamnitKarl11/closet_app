@@ -27,14 +27,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Add response interceptor to handle 401 errors
+// Error handling interceptor
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Clear token and redirect to login
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('API Error Response:', error.response.data);
+      console.error('Status:', error.response.status);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('No response received:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error setting up request:', error.message);
     }
     return Promise.reject(error);
   }
@@ -123,8 +130,13 @@ export const getWeatherSuggestions = async (city?: string, zipCode?: string): Pr
 };
 
 export const getCurrentWeather = async (): Promise<Weather> => {
-  const response = await api.get('/weather/current/');
-  return response.data;
+  try {
+    const response = await api.get('/weather/current/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching current weather:', error);
+    throw error;
+  }
 };
 
 export const login = async (username: string, password: string) => {
