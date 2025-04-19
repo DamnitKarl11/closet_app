@@ -41,8 +41,13 @@ api.interceptors.response.use(
 );
 
 export const getClothingItems = async (): Promise<ClothingItem[]> => {
-  const response = await api.get('/clothing-items/');
-  return response.data;
+  try {
+    const response = await api.get('/clothing-items/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching clothing items:', error);
+    throw error;
+  }
 };
 
 export interface ClothingItemFormData {
