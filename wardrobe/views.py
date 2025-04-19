@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from .models import ClothingItem, WearLog, WeatherLog, Weather
@@ -166,3 +166,7 @@ class WeatherViewSet(viewsets.ReadOnlyModelViewSet):
         
         serializer = self.get_serializer(weather)
         return Response(serializer.data)
+
+@api_view(['GET'])
+def health_check(request):
+    return Response({"status": "healthy"}, status=status.HTTP_200_OK)

@@ -9,4 +9,5 @@ router.register(r'weather', views.WeatherViewSet, basename='weather')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('health/', views.health_check, name='health-check'),
 ] 
