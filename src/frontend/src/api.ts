@@ -2,11 +2,12 @@ import axios from 'axios';
 import { ClothingItem, WearLog, WeatherSuggestion, Weather } from './types';
 import { API_BASE_URL, AUTH_BASE_URL } from './config';
 
-// Create a separate instance for auth requests (no credentials needed)
+// Create a separate instance for auth requests
 export const authApi = axios.create({
   baseURL: AUTH_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
 
@@ -14,8 +15,8 @@ export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
-  withCredentials: true,
 });
 
 // Add token to requests if it exists
@@ -31,6 +32,16 @@ api.interceptors.request.use((config) => {
     console.log('Request headers after:', config.headers);
   } else {
     console.warn('No auth token found in localStorage');
+    window.location.href = '/login';
+  }
+  return config;
+});
+
+// Add same token handling to authApi
+authApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token && !config.url?.includes('login') && !config.url?.includes('register')) {
+    config.headers.Authorization = `Token ${token}`;
   }
   return config;
 });
@@ -43,8 +54,6 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
       console.error('API Error Response:', error.response.data);
       console.error('Status:', error.response.status);
       console.error('Headers:', error.response.headers);
@@ -54,16 +63,13 @@ api.interceptors.response.use(
       
       if (error.response.status === 401) {
         console.error('Unauthorized: Token might be invalid or expired');
-        // Clear token and redirect to login
         localStorage.removeItem('token');
         window.location.href = '/login';
       }
     } else if (error.request) {
-      // The request was made but no response was received
       console.error('No response received:', error.request);
       console.error('Request config:', error.config);
     } else {
-      // Something happened in setting up the request that triggered an Error
       console.error('Error setting up request:', error.message);
       console.error('Error config:', error.config);
     }
