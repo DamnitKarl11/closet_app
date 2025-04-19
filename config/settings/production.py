@@ -34,15 +34,20 @@ SECURE_HSTS_PRELOAD = True
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
     "https://closet-app-g0ud.onrender.com",
+    "http://localhost:3000",
+    "http://localhost:5173",
 ]
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
-CSRF_COOKIE_DOMAIN = '.onrender.com'
+CSRF_COOKIE_DOMAIN = None  # Allow cross-domain cookies
 
 # CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # For development and testing
 CORS_ALLOWED_ORIGINS = [
     "https://closet-app-g0ud.onrender.com",
+    "http://localhost:3000",
+    "http://localhost:5173",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
@@ -78,15 +83,32 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'rest_framework.authentication': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
     },
 } 
