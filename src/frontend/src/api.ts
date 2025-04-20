@@ -59,6 +59,53 @@ authApi.interceptors.request.use((config) => {
   return config;
 });
 
+// Add response interceptors to both API instances
+authApi.interceptors.response.use(
+  (response) => {
+    console.log('Auth API Response:', {
+      url: response.config.url,
+      method: response.config.method,
+      status: response.status,
+      data: response.data,
+      headers: response.headers
+    });
+    return response;
+  },
+  (error) => {
+    console.error('Auth API Error:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data,
+      headers: error.response?.headers
+    });
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => {
+    console.log('API Response:', {
+      url: response.config.url,
+      method: response.config.method,
+      status: response.status,
+      data: response.data,
+      headers: response.headers
+    });
+    return response;
+  },
+  (error) => {
+    console.error('API Error:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data,
+      headers: error.response?.headers
+    });
+    return Promise.reject(error);
+  }
+);
+
 // Error handling interceptor
 api.interceptors.response.use(
   (response) => {
