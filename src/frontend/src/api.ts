@@ -22,20 +22,22 @@ export const api = axios.create({
 // Add token to requests if it exists
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('authToken');
-  console.log('API Request:', {
-    url: config.url,
+  console.log('Making API request:', {
+    url: `${config.baseURL}${config.url}`,
     method: config.method,
-    token: token,
-    headers: config.headers
+    token: token ? `Token ${token}` : 'No token'
   });
   
   if (token) {
-    config.headers.Authorization = `Token ${token}`;
-    console.log('Added token to request headers:', config.headers);
+    config.headers['Authorization'] = `Token ${token}`;
+    // Log the complete headers being sent
+    console.log('Request headers:', {
+      ...config.headers,
+      Authorization: `Token ${token}`
+    });
   } else {
     console.warn('No auth token found in localStorage');
     if (!config.url?.includes('login') && !config.url?.includes('register')) {
-      console.log('Non-auth request without token, redirecting to login');
       window.location.href = '/login';
     }
   }
@@ -45,16 +47,19 @@ api.interceptors.request.use((config) => {
 // Add same token handling to authApi
 authApi.interceptors.request.use((config) => {
   const token = localStorage.getItem('authToken');
-  console.log('Auth API Request:', {
-    url: config.url,
+  console.log('Making Auth API request:', {
+    url: `${config.baseURL}${config.url}`,
     method: config.method,
-    token: token,
-    headers: config.headers
+    token: token ? `Token ${token}` : 'No token'
   });
   
   if (token && !config.url?.includes('login') && !config.url?.includes('register')) {
-    config.headers.Authorization = `Token ${token}`;
-    console.log('Added token to auth request headers:', config.headers);
+    config.headers['Authorization'] = `Token ${token}`;
+    // Log the complete headers being sent
+    console.log('Auth request headers:', {
+      ...config.headers,
+      Authorization: `Token ${token}`
+    });
   }
   return config;
 });
@@ -79,6 +84,13 @@ authApi.interceptors.response.use(
       data: error.response?.data,
       headers: error.response?.headers
     });
+
+    // Check if we received HTML instead of JSON
+    if (error.response?.data && typeof error.response.data === 'string' && error.response.data.includes('<!DOCTYPE')) {
+      console.error('Received HTML response instead of JSON');
+      return Promise.reject(new Error('Invalid response format: expected JSON, got HTML'));
+    }
+
     return Promise.reject(error);
   }
 );
@@ -102,44 +114,29 @@ api.interceptors.response.use(
       data: error.response?.data,
       headers: error.response?.headers
     });
-    return Promise.reject(error);
-  }
-);
 
-// Error handling interceptor
-api.interceptors.response.use(
-  (response) => {
-    console.log('Response received:', response.status, response.config.url);
-    return response;
-  },
-  (error) => {
-    if (error.response) {
-      console.error('API Error Response:', error.response.data);
-      console.error('Status:', error.response.status);
-      console.error('Headers:', error.response.headers);
-      console.error('Request URL:', error.config.url);
-      console.error('Request method:', error.config.method);
-      console.error('Request headers:', error.config.headers);
-      
-      if (error.response.status === 401) {
-        console.error('Unauthorized: Token might be invalid or expired');
-        localStorage.removeItem('authToken');
-        window.location.href = '/login';
-      }
-    } else if (error.request) {
-      console.error('No response received:', error.request);
-      console.error('Request config:', error.config);
-    } else {
-      console.error('Error setting up request:', error.message);
-      console.error('Error config:', error.config);
+    // Check if we received HTML instead of JSON
+    if (error.response?.data && typeof error.response.data === 'string' && error.response.data.includes('<!DOCTYPE')) {
+      console.error('Received HTML response instead of JSON');
+      return Promise.reject(new Error('Invalid response format: expected JSON, got HTML'));
     }
+
+    if (error.response?.status === 401) {
+      console.error('Unauthorized: Token might be invalid or expired');
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
+    }
+
     return Promise.reject(error);
   }
 );
 
 export const getClothingItems = async (): Promise<ClothingItem[]> => {
   try {
-    console.log('Fetching clothing items from:', `${API_BASE_URL}/clothing-items/`);
+    console.log('Fetching clothing items...');
+    const token = localStorage.getItem('authToken');
+    console.log('Current token:', token);
+    
     const response = await api.get('/clothing-items/');
     console.log('Clothing items response:', response.data);
     return response.data;
@@ -233,14 +230,35 @@ export const getCurrentWeather = async (): Promise<Weather> => {
 
 export const login = async (username: string, password: string) => {
   try {
-    // Use authApi for login request
+    console.log('Attempting login for user:', username);
     const response = await authApi.post('/api/accounts/login/', { username, password });
+    console.log('Login response:', {
+      status: response.status,
+      hasToken: !!response.data.token,
+      tokenLength: response.data.token?.length
+    });
+    
     if (response.data.token) {
+      console.log('Setting auth token in localStorage');
       localStorage.setItem('authToken', response.data.token);
+      
+      // Verify token was stored
+      const storedToken = localStorage.getItem('authToken');
+      console.log('Stored token verification:', {
+        tokenStored: !!storedToken,
+        tokenLength: storedToken?.length,
+        matches: storedToken === response.data.token
+      });
+    } else {
+      console.error('No token received in login response');
+      throw new Error('No authentication token received');
     }
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error);
+    if (error.response?.data) {
+      console.error('Login error details:', error.response.data);
+    }
     throw error;
   }
 }; 
